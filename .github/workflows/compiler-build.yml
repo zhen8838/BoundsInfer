@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 jobs:
   test:
-    needs: [build-compiler]
     name: test-${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
     strategy:
