@@ -3,7 +3,7 @@ import numpy as np
 from halide import BoundaryConditions
 from typing import NamedTuple, Tuple
 import pytest
-from conv2d_transpose_utils import *
+from tests.conv2d_transpose_utils import *
 
 
 def halide_impl(input: np.ndarray, weight: np.ndarray, stride=[1, 1], padding=[0, 0], output_padding=[0, 0], dilation=[1, 1]):
@@ -24,7 +24,7 @@ def halide_impl(input: np.ndarray, weight: np.ndarray, stride=[1, 1], padding=[0
   hlWeight = hl.Buffer(weight.transpose(list(range(len(weight.shape) - 1, -1, -1))))
   # hlOutput = hl.Buffer(output.transpose(list(range(len(output.shape) - 1, -1, -1))))
   Batch, Oc, Oh, Ow = hl.Var("Batch"), hl.Var("Oc"), hl.Var("Oh"), hl.Var("Ow")
-  r = hl.RDom([(0, weight.shape[3]), (0, weight.shape[2]), (0, IC)])
+  r = hl.RDom([(0, weight.shape[3]), (0, weight.shape[2]), (0, IC)], name="r")
   conved = hl.Func("conved")
   hlOutput = hl.Func("output")
   hlOutputBuffer = hl.Buffer(output)
@@ -34,6 +34,14 @@ def halide_impl(input: np.ndarray, weight: np.ndarray, stride=[1, 1], padding=[0
   conved[Ow, Oh, Oc, Batch] += paded[((Ow + padding[1]) / stride[1]) - r.x,
                                      ((Oh + padding[0]) / stride[0]) - r.y, r.z, Batch] * hlWeight[r.x, r.y, Oc, r.z]
   hlOutput[Ow, Oh, Oc, Batch] = conved[Ow, Oh, Oc, Batch]
+  OcO, OcI = hl.Var("OcO"), hl.Var("OcI")
+  IcO, IcI = hl.RVar("IcO"), hl.RVar("IcI")
+  conved.reorder(Oc, Ow, Oh, Batch)
+  conved.update().reorder(r.x, r.y, r.z, Oc, Ow, Oh, Batch). \
+      split(r.z, IcO, IcI, 8). \
+      split(Oc, OcO, OcI, 24, hl.TailStrategy.GuardWithIf). \
+      reorder(r.x, r.y, IcI, OcI, IcO, OcO, Ow, Oh, Batch)
+  hlOutput.reorder(Oc, Ow, Oh, Batch)
   hlOutput.print_loop_nest()
   hlOutput.realize(hlOutputBuffer)
   output = output.transpose(list(range(len(output.shape) - 1, -1, -1)))

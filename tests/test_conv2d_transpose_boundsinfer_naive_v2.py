@@ -4,7 +4,7 @@ import numpy as np
 # from halide import BoundaryConditions
 from typing import NamedTuple, Tuple
 import pytest
-from conv2d_transpose_utils import *
+from tests.conv2d_transpose_utils import *
 
 
 def naive_impl_v2(input: np.ndarray, weight: np.ndarray, stride=[1, 1], padding=[0, 0], output_padding=[0, 0], dilation=[1, 1]):
@@ -21,8 +21,10 @@ def naive_impl_v2(input: np.ndarray, weight: np.ndarray, stride=[1, 1], padding=
   output = np.zeros(out_shape)
   for batch in range(input.shape[0]):
     for oc in range(OC):
+      # print("====================")
       for oh in range(OH):
         for ow in range(OW):
+          # print(f"output[{oc},{oh},{ow}] += ", end="")
           iy_origin = (oh + padding[0]) // stride[0]
           ix_origin = (ow + padding[1]) // stride[1]
           for ic in range(IC):
@@ -32,7 +34,9 @@ def naive_impl_v2(input: np.ndarray, weight: np.ndarray, stride=[1, 1], padding=
                 ix = ix_origin - kx
                 if ((iy >= 0 and iy <= input.shape[2] - 1) and
                         (ix >= 0 and ix <= input.shape[3] - 1)):
+                  # print(f"input[{ic}, {iy}, {ix}] * weight[{oc}, {ic}, {ky}, {kx}]", end=", ")
                   output[batch, oc, oh, ow] += input[batch, ic, iy, ix] * weight[ic, oc, ky, kx]
+          # print()
   return output
 
 
@@ -59,4 +63,4 @@ def test_torch_naive_v2(in_hw: Tuple[int, int], in_channel: int, output_channel:
 
 
 if __name__ == "__main__":
-  pytest.main(['-vv', __file__])
+  pytest.main(['-vv', __file__, '-s'])

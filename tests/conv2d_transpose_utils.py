@@ -4,15 +4,18 @@ import numpy as np
 
 
 param_in_hws = [
-    [24, 24]
+    [3, 4],
+    [32, 24]
 ]
 param_in_channels = [
     1,
+    2,
     16,
 ]
 param_output_channels = [
+    2,
     1,
-    32,
+    8,
 ]
 param_k_hws = [
     [3, 3],
@@ -40,18 +43,3 @@ def conv2d_transpose_reference(input: np.ndarray, weight: np.ndarray, stride=[1,
   # OC = weight.shape[1]  # note groups == 1
   return torch.conv_transpose2d(torch.tensor(input), torch.tensor(weight), None, stride, padding, output_padding, 1, dilation).detach().numpy()
 
-
-def calc_input_kw_index_by_kernel_index(out_index: int, padding_before: int, padding_after: int, input_length: int, kernel_index: int, stride: int):
-  in_index = max(0, int(math.ceil(1 * (out_index - kernel_index) / stride)))
-  in_index -= padding_before
-  in_index = math.max(0, math.min(in_index, input_length - 1))
-  return in_index
-
-
-def calc_input_kh_range(out_index: int, padding_before: int, padding_after: int, input_length: int, kernel_length: int, stride: int):
-  in_index_start = calc_input_kw_index_by_kernel_index(
-      out_index, padding_before, padding_after, input_length, 0, stride)
-  in_index_end = calc_input_kw_index_by_kernel_index(
-      out_index, padding_before, padding_after, input_length, kernel_length - 1, stride)
-
-  return slice(in_index_start, in_index_end)

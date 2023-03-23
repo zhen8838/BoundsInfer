@@ -35,16 +35,11 @@ def do_conv(width=3,
   # print(feat, kern)
   out = f.conv2d(feat, kern, stride=[strideY, strideX], dilation=[dilationY, dilationX])
 
-  feat.numpy().tofile('/Users/lisa/Documents/workspace/HalideTest/input')
-  kern.numpy().tofile('/Users/lisa/Documents/workspace/HalideTest/weights')
-  out.numpy().tofile('/Users/lisa/Documents/workspace/HalideTest/output')
-
-
 demo1 = partial(do_conv, width=4, height=4)
 
 
 i_channel = [16]
-i_size = [[1, 1]]
+i_size = [[5, 5]]
 padding = [[0, 0]]
 stride = [[1, 1]]
 dilation = [[1, 1]]
