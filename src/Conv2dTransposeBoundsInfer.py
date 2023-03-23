@@ -50,21 +50,23 @@ class Conv2dTransposeBoundsInfer():
     ix_origin = (ow + self.padding_w) // self.stride_w
     ix_start = ix_origin - (self.filter_w - 1)
     ix_end = ix_origin - (0)
-    left_overflow = max(0, 0 - ix_start)
-    kx_end = self.filter_w - left_overflow
-    right_overflow = max(0, ix_end - (self.in_shape[3] - 1))
-    kx_start = 0 + right_overflow
+    ix_left_overflow = max(0, 0 - ix_start)
+    kx_end = self.filter_w - ix_left_overflow
+    ix_right_overflow = max(0, ix_end - (self.in_shape[3] - 1))
+    kx_start = 0 + ix_right_overflow
+    kx_slice = slice(kx_start, kx_end)
 
     iy_origin = (oh + self.padding_h) // self.stride_h
     iy_start = iy_origin - (self.filter_h - 1)
     iy_end = iy_origin - (0)
-    left_overflow = max(0, 0 - iy_start)
-    ky_end = self.filter_h - left_overflow
-    right_overflow = max(0, iy_end - (self.in_shape[2] - 1))
-    ky_start = 0 + right_overflow
-
+    iy_left_overflow = max(0, 0 - iy_start)
+    ky_end = self.filter_h - iy_left_overflow
+    iy_right_overflow = max(0, iy_end - (self.in_shape[2] - 1))
+    ky_start = 0 + iy_right_overflow
+    ky_slice = slice(ky_start, ky_end)
     # w: [ic,oc,kh,kw]
-    return [slice(0, self.in_groups), slice(oc, oc + 1), slice(ky_start, ky_end), slice(kx_start, kx_end)]
+
+    return [slice(0, self.in_groups), slice(oc, oc + 1), ky_slice, kx_slice]
 
   def get_input_segment(self, n: slice, c: slice, h: slice, w: slice) -> List[slice]:
     return [slice(p[0].start, p[1].stop) for p in zip(self.__get_input_range(n.start, c.start, h.start, w.start),

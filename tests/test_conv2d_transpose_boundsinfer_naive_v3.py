@@ -1,4 +1,3 @@
-# import halide as hl
 from src import Segments, Conv2dTransposeBoundsInfer
 import torch
 import numpy as np

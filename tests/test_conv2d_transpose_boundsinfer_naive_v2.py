@@ -1,4 +1,3 @@
-# import halide as hl
 import torch
 import numpy as np
 # from halide import BoundaryConditions
