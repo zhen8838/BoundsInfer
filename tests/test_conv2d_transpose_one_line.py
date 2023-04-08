@@ -90,10 +90,10 @@ def run_backward_v2(IW: int, input: np.ndarray, weight: np.ndarray, padding: int
   return output
 
 
-IWs = [5]
-KWs = [3]
-paddings = [0]  # , 1, 0
-strides = [2, 1]  # 1
+IWs = [5, 6, 14]
+KWs = [3, 1]
+paddings = [2, 1]  # , 1, 0
+strides = [1, 2]  # 1
 
 
 @pytest.mark.parametrize('iw', IWs)
@@ -102,8 +102,8 @@ strides = [2, 1]  # 1
 @pytest.mark.parametrize('stride', strides)
 def test_forward_backward(iw, kw, padding, stride):
   dilation = 1  # not support dilation > 1
-  weight = np.ones(kw, np.float32)  # np.random.randn(kw).astype(np.float32)
-  input = np.ones(iw).astype(np.float32)
+  weight = np.random.rand(kw).astype(np.float32)  # np.ones(kw, np.float32)
+  input = np.random.rand(iw).astype(np.float32)  # np.ones(iw).astype(np.float32)
   output_forward = run_forward(iw, input, weight, padding, stride, dilation, kw)
   output_backward_v1 = run_backward_v1(iw, input, weight, padding, stride, dilation, kw)
   output_backward_v2 = run_backward_v2(iw, input, weight, padding, stride, dilation, kw)
