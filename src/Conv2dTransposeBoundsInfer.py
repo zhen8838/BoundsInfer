@@ -66,7 +66,15 @@ class Conv2dTransposeBoundsInfer():
     ky_slice = slice(ky_start, ky_end)
     # w: [ic,oc,kh,kw]
 
-    return [slice(0, self.in_groups), slice(oc, oc + 1), ky_slice, kx_slice]
+    in_c_start = (oc // self.out_groups) * self.in_groups
+    in_c_end = in_c_start + self.in_groups
+    in_c_slice = slice(in_c_start, in_c_end)
+
+    in_c_start = oc % self.out_groups
+    in_c_end = in_c_start + 1
+    o_c_slice = slice(in_c_start,in_c_end)
+
+    return [in_c_slice, o_c_slice, ky_slice, kx_slice]
 
   def get_input_segment(self, n: slice, c: slice, h: slice, w: slice) -> List[slice]:
     return [slice(p[0].start, p[1].stop) for p in zip(self.__get_input_range(n.start, c.start, h.start, w.start),

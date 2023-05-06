@@ -15,11 +15,16 @@ from tests.conv2d_transpose_utils import *
 @pytest.mark.parametrize('padding', param_paddings)
 @pytest.mark.parametrize('output_padding', param_output_paddings)
 @pytest.mark.parametrize('dilation', param_dilations)
+@pytest.mark.parametrize('is_dw', param_dws)
 def test_torch_naive_v3(in_hw: Tuple[int, int], in_channel: int, output_channel: int, k_hw: Tuple[int, int],
-                        stride: Tuple[int, int], padding: Tuple[int, int], output_padding: Tuple[int, int], dilation: Tuple[int, int]):
+                        stride: Tuple[int, int], padding: Tuple[int, int], output_padding: Tuple[int, int], dilation: Tuple[int, int], is_dw: bool):
+  groups = 1
+  if is_dw:
+    output_channel = in_channel
+    groups = in_channel
   input_shape = [1, in_channel, in_hw[0], in_hw[1]]
-  weight_shape = [in_channel, output_channel, k_hw[0], k_hw[1]]
-  infer = Conv2dTransposeBoundsInfer(in_channel, output_channel, k_hw, 1, False,
+  weight_shape = [in_channel, output_channel // groups, k_hw[0], k_hw[1]]
+  infer = Conv2dTransposeBoundsInfer(in_channel, output_channel, k_hw, groups, False,
                                      padding, output_padding, stride, dilation, input_shape)
 
   input = infer.test_input.detach().numpy()

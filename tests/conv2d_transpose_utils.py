@@ -35,11 +35,11 @@ param_output_paddings = [
 param_dilations = [
     [1, 1]
 ]
+param_dws = [
+    True,
+    False,
+]
 
 
-def conv2d_transpose_reference(input: np.ndarray, weight: np.ndarray, stride=[1, 1], padding=[0, 0], output_padding=[0, 0], dilation=[1, 1]):
-  # in_channels = input.shape[1]
-  # kernel_size = [weight.shape[2], weight.shape[3]]
-  # OC = weight.shape[1]  # note groups == 1
-  return torch.conv_transpose2d(torch.tensor(input), torch.tensor(weight), None, stride, padding, output_padding, 1, dilation).detach().numpy()
-
+def conv2d_transpose_reference(input: np.ndarray, weight: np.ndarray, stride=[1, 1], padding=[0, 0], output_padding=[0, 0], dilation=[1, 1], groups: int = 1):
+  return torch.conv_transpose2d(torch.tensor(input), torch.tensor(weight), None, stride, padding, output_padding, groups, dilation).detach().numpy()
